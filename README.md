@@ -1,0 +1,2 @@
+# walangaduk
+Walang Administrasi Kependudukan
