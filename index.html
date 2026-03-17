@@ -1220,7 +1220,7 @@
     // ==========================================
     // Jika Anda menghosting file ini di GitHub Pages, ganti URL di bawah ini
     // dengan URL Web App dari Google Apps Script Anda (yang berakhiran /exec)
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzg6qPV5CxavrUrNTYzwR-Se3leQ-wHlJhshokxG4553txpAAsbZlnJe0G6OKb44R_6/exec";
+    const WEB_APP_URL = "MASUKKAN_URL_WEB_APP_ANDA_DISINI";
 
     // API Caller: Otomatis mendeteksi lingkungan (GAS Native vs GitHub)
     function apiCall(action, params) {
@@ -1241,15 +1241,25 @@
                 }
                 
                 fetch(WEB_APP_URL + "?action=" + action, {
+                    redirect: "follow",
                     method: 'POST',
                     body: JSON.stringify(params),
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' } // Hindari CORS preflight
                 })
-                .then(response => response.json())
+                .then(async response => {
+                    const rawText = await response.text();
+                    try {
+                        return JSON.parse(rawText);
+                    } catch (e) {
+                        console.error("Response dari server bukan format JSON. Output raw:", rawText);
+                        throw new Error("Server Apps Script gagal memproses permintaan. Periksa log atau periksa apakah fungsi doPost berjalan dengan benar.");
+                    }
+                })
                 .then(resolve)
                 .catch(error => {
                     console.error("API Error:", error);
-                    reject(error);
+                    let errMsg = "Terjadi kesalahan jaringan atau server menolak koneksi.\n\nPastikan di Google Apps Script Anda:\n1. Akses (Who has access) disetel ke 'Siapa saja' (Anyone).\n2. URL yang Anda masukkan sudah berakhiran '/exec'.\n3. Lakukan 'Deployment Baru' setiap kali ada perubahan pada Code.gs.";
+                    reject(errMsg);
                 });
             }
         });
@@ -1433,7 +1443,7 @@
             })
             .catch(function(err) {
                 btn.disabled = false; loader.classList.add('hidden'); text.textContent = 'Masuk';
-                alert("Terjadi kesalahan jaringan.");
+                alert(err.message || err);
             });
     }
 
@@ -1477,7 +1487,7 @@
             })
             .catch(function(err) {
                 btn.disabled = false; loader.classList.add('hidden'); text.textContent = 'Daftar Akun';
-                alert("Terjadi kesalahan jaringan.");
+                alert(err.message || err);
             });
     }
 
@@ -1597,9 +1607,9 @@
                     alert("Gagal: " + response.error);
                 }
             })
-            .catch(function(error) {
+            .catch(function(err) {
                 btn.disabled = false; loader.classList.add('hidden'); text.textContent = 'Kirim Permohonan';
-                alert("Terjadi kesalahan jaringan.");
+                alert(err.message || err);
             });
     }
 
@@ -1624,9 +1634,9 @@
                     document.getElementById('status-empty').classList.remove('hidden');
                 }
             })
-            .catch(function(error) {
+            .catch(function(err) {
                 btn.disabled = false; loader.classList.add('hidden'); text.textContent = 'Cek Status';
-                alert("Gagal menghubungi server.");
+                alert(err.message || err);
             });
     }
 
